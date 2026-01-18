@@ -7,12 +7,14 @@
 
 
 ## 설치
-- 사용하는 Ariflow의 버전은 2.6.3으로, Python 3.7 ~ 3.11만 지원하니 Python 버전을 확인해주세요. 
+- 사용하는 Ariflow의 버전은 3.1.5로, Python 3.13~ 만 지원하니 Python 버전을 확인해주세요. 
 
 ### 가상 환경 설정
 
 ```
-python -m venv .venv
+uv init
+uv python install 3.13.1
+uv sync
 source .venv/bin/activate
 ```
 
@@ -20,13 +22,9 @@ source .venv/bin/activate
 - 그냥 설치할 경우 의존성 이슈로 오류가 발생할 수 있기 때문에 아래 명령어로 Airflow를 설치합니다.
 
 ```
-pip3 install pip --upgrade
-
-AIRFLOW_VERSION=2.6.3
-PYTHON_VERSION="$(python --version | cut -d " " -f 2 | cut -d "." -f 1-2)" 
-CONSTRAINT_URL="https://raw.githubusercontent.com/apache/airflow/constraints-${AIRFLOW_VERSION}/constraints-${PYTHON_VERSION}.txt"
-
-pip3 install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL}"
+uv pip install "apache-airflow[celery]==3.1.5" \
+  --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-3.1.5/constraints-3.13.txt"
+uv add "apache-airflow[celery]==3.1.5"
 ```
 
 
@@ -34,49 +32,23 @@ pip3 install "apache-airflow==${AIRFLOW_VERSION}" --constraint "${CONSTRAINT_URL
 ## Airflow DB init
 
 ```
+# 현재 경로에 AIRFLOW_HOME 설정
 export AIRFLOW_HOME=$(pwd)
 echo $AIRFLOW_HOME
 export TZ=UTC
 
-airflow db init
-```
-
-## Airflow Admin 생성
-
-```
-airflow users create \
---username admin \
---password '!boostcamp-aitech!' \
---firstname kyle \
---lastname byeon \
---role Admin \
---email snugyun01@gmail.com 
+airflow db migrate
 ```
 
 ## Airflow Webserver 실행
-- Airflow는 Webserver, Scheduler를 모두 실행해야 정상적으로 작동합니다
 
 ```
-airflow webserver --port 8080
+airflow standalone
 ```
 
-- 만약 아래와 같은 오류가 발생한다면, `airflow.cfg` 파일을 수정하면 됩니다(오류가 발생하지 않으면 다음 단계로)
-    - `airflow.cfg` 파일의 `sql_alchemy_conn` 값을 절대 경로로 수정하면 됩니다. `sqlite:///./airflow.db`로 수정하면 됩니다
-        - 예 : `sql_alchemy_conn = sqlite:///${AIRFLOW_HOME}/airflow.db`
-
-    ```
-    airflow.exceptions.AirflowConfigException: Cannot use relative path: `sqlite:///./airflow.db` to connect to sqlite. Please use absolute path such as `sqlite:////tmp/airflow.db
-    ```
-
-### Airflow Scheduler 실행
+## [localhost](http://localhost:8080) 에 접속해서 아래 출력 입력.
 ```
-airflow scheduler
-```
-
-- Database init 내용이 나올 때 y를 입력
-
-```
-Please confirm database initialize (or wait 4 seconds to skip it). Are you sure? [y/N] 
+cat simple_auth_manager_passwords.json.generated
 ```
 
 ---
